@@ -1,6 +1,6 @@
 # URL ----------------------------------------------------------
 # fileURL = address
-fileURL = "D:/EmotionalAttention"
+fileURL = "~/Documents/EmotionalAttention"
 # fileURL = "/Users/Pang/Documents/EmotionalAttention/"
 #----------------------------------------------------------------
 fileURL_txtdata = paste0(fileURL, "/data_envSound_csv")
@@ -11,6 +11,22 @@ d = data.frame()
 for (i in 1:length(files)) {
   temp = read.csv(file.path(fileURL_txtdata, files[i]), header = TRUE)
   temp$runNum = 1:nrow(temp)
+
+    
+  # Get aud type
+  temp2 = strsplit(files[i],"_")[[1]][2]
+  temp3 = strsplit(temp2, ".csv")[[1]][1]
+  temp$audType = temp3
+
+  # Get file type
+  if(grepl("mock", files[i], ignore.case = T)){
+    temp$fileType = "mock"
+  } else {
+    temp$fileType = "actual"
+  }
+  
+  temp$fileName = files[i]
+  # Bind data  
   d = rbind(d, temp)
 }
 
@@ -26,6 +42,8 @@ d$shape_diamondglass[d$shape_diamondglass == 1] = "diamond"
 d$shape_diamondglass[d$shape_diamondglass == 2] = "hourglass"
 d$resp[d$resp == 1] = "diamond"
 d$resp[d$resp == 2] = "hourglass"
+d$soundCond_P_N[d$audType == "audType1"] <- "P"
+d$soundCond_P_N[d$audType == "audType2"] <- "N"
 
 # Change column names
 colnames(d) = c("subNum", "runNum",
@@ -34,26 +52,20 @@ colnames(d) = c("subNum", "runNum",
                 "emo_HA_AN_NE", "csi_125_500", "exshuffle",
                 "resp", "RT", "hit",
                 "isi", "iti", "hit_notslow", "slow",
-                "stimonset")
-
-# Actual subjects
-actual_subs = c("PN1608")
+                "stimonset", "audType", "fileType", "fileName",
+                "soundCond_P_N")
 
 # Subset
-d = subset(d, subNum %in% actual_subs)
+d = subset(d, fileType == "actual")
 
 # Create a new column for sound condition (PN or NP)
-actual_subs = c("PN2402", "PN2403", "PN1504", "PN1505",
-                "PN2506", "PN2507", "PN1608", "PN1609",
-                "NP1411", "NP2412", "NP2513", "NP1514",
-                "NP1515", "NP2516", "NP2517", "NP1618",
-                "NP1619", "NP2620")
+d$soundCond = substr(d$subNum, 1,2)
 
-# Create a new column for sound condition (P or N)
-d$soundCond_P_N[d$soundCond == "PN" & d$runNum <= 144] <- "P"
-d$soundCond_P_N[d$soundCond == "PN" & d$runNum > 144] <- "N"
-d$soundCond_P_N[d$soundCond == "NP" & d$runNum <= 144] <- "N"
-d$soundCond_P_N[d$soundCond == "NP" & d$runNum > 144] <- "P"
+# Sanity check
+table(d$coninc, d$emo_HA_AN_NE)
+table(d$coninc, d$csi_125_500)
+table(d$coninc, d$cueloc)
+table(d$coninc, d$soundCond_P_N)
 
 #---------------------------------------------------------------------
 # bar plot for correctRT of different emotion (HA, AN, NE) x congruency (con x incon). 
@@ -67,6 +79,16 @@ source("D:/EmotionalAttention/R/summarySE.R")
 # source("flanker_emotionalAttention_supFunc.R")
 ################################################
 
+createEmoAtten_linePlot_soundEnv(d = d,plotType = "hitRate",soundEnv_P_N = "P", CSI = 125)
+createEmoAtten_linePlot_soundEnv(d = d,plotType = "hitRate",soundEnv_P_N = "N", CSI = 125)
+createEmoAtten_linePlot_soundEnv(d = d,plotType = "hitRate",soundEnv_P_N = "P", CSI = 500)
+
+createEmoAtten_linePlot_soundEnv(d = d,plotType = "hitRate",soundEnv_P_N = "N", CSI = 500)
+
+# createEmoAtten_linePlot_soundEnv(d = d,plotType = "correctRT",soundEnv_P_N = "P", CSI = 125)
+# createEmoAtten_linePlot_soundEnv(d = d,plotType = "correctRT",soundEnv_P_N = "N", CSI = 125)
+# createEmoAtten_linePlot_soundEnv(d = d,plotType = "correctRT",soundEnv_P_N = "P", CSI = 500)
+# createEmoAtten_linePlot_soundEnv(d = d,plotType = "correctRT",soundEnv_P_N = "N", CSI = 500)
 
 createEmoAtten_linePlot_soundEnv(d = d,plotType = "hitRate",soundEnv_P_N = "P")
 createEmoAtten_linePlot_soundEnv(d = d,plotType = "hitRate",soundEnv_P_N = "N")

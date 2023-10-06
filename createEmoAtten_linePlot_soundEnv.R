@@ -14,13 +14,13 @@ createEmoAtten_linePlot_soundEnv = function(d,
   if (plotType == "correctRT") {
     d.plotType = subset(d, hit == 1); 
     depVar = "RT"
-    ymin = 0.00
-    ymax = 1.00
+    ymin = 0.6
+    ymax = 0.8
   } else if (plotType == "hitRate") {
     d.plotType = d; 
     depVar = "hit"
     ymax = 1.00
-    ymin = 0.00
+    ymin = 0.85
   }
   
   # subset by subject
@@ -41,7 +41,7 @@ createEmoAtten_linePlot_soundEnv = function(d,
     d.bycsi = d.plotType
   } else {
     # subset by csi and faceOrient
-    d.bycsi = subset(d.plotType, csi == CSI & soundCond_P_N == soundEnv_P_N)
+    d.bycsi = subset(d.plotType, csi_125_500 == CSI & soundCond_P_N == soundEnv_P_N)
   }
   
   # create summary of data with error-bar information ##########################
@@ -80,9 +80,9 @@ createEmoAtten_linePlot_soundEnv = function(d,
     scale_y_continuous(limits = c(ymin, ymax)) +
     ylab(plotType) + xlab("Face emotion") +
     ggtitle(paste("sound=", soundEnv_P_N, " , csi=", CSI))
-  
+
   print(p1)
-  
+
   # 
   # # Save PDF
   # if (saveFile) {
@@ -103,12 +103,10 @@ createEmoAtten_linePlot_soundEnv = function(d,
   # }
   # 
   # 
-  # # Perform anova ##############################################################
-  # if (plotType == "hitRate") {
-  #   EmoAtten_ANOVA_hit(d, faceOri = faceOri, CSI = CSI, subNumber = subNumber);
-  # } else if (plotType == "correctRT") {
-  #   EmoAtten_ANOVA_correctRT(d, faceOri = faceOri, CSI = CSI, subNumber = subNumber)
-  # }
+  # Perform anova ##############################################################
+  if (plotType == "hitRate") {
+    EmoAtten_ANOVA_hit(d, soundEnv_P_N = soundEnv_P_N, csi_125_500 = CSI, subNumber = subNumber);
+  }
   
 }
 
